@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
-String convertToTwoDigitString(int value){
+String convertToTwoDigitString(int value) {
   if (value < 10) {
     return "0$value";
-  }
-  else {
+  } else {
     return value.toString();
   }
 }
 
 class StopWatchDisplay extends StatelessWidget {
-  const StopWatchDisplay({required this.hours, required this.minutes,
-    required this.seconds, super.key});
+  const StopWatchDisplay(
+      {required this.hours,
+      required this.minutes,
+      required this.seconds,
+      super.key});
 
   final int hours;
   final int minutes;
@@ -23,6 +25,30 @@ class StopWatchDisplay extends StatelessWidget {
     var minuteString = convertToTwoDigitString(minutes);
     var secondString = convertToTwoDigitString(seconds);
     var displayString = "$hourString:$minuteString:$secondString";
+    return Text(displayString, style: const TextStyle(fontSize: 64.0));
+  }
+}
+
+class StopWatchDisplayAllTimes extends StatelessWidget {
+  const StopWatchDisplayAllTimes(
+      {required this.allTimes, super.key});
+
+  final List allTimes;
+
+  @override
+  Widget build(BuildContext context) {
+    var displayString = "";
+    for (var i=0;i<allTimes.length;i++){
+      var timeList = allTimes[i];
+      var hours = timeList[0];
+      var minutes = timeList[1];
+      var seconds = timeList[2];
+      var hourString = convertToTwoDigitString(hours);
+      var minuteString = convertToTwoDigitString(minutes);
+      var secondString = convertToTwoDigitString(seconds);
+      displayString = displayString + "Time ${i+1}=     $hourString:$minuteString:$secondString\n";
+    }
+
     return Text(displayString, style: const TextStyle(fontSize: 64.0));
   }
 }
@@ -101,9 +127,10 @@ class _StopWatchState extends State<StopWatch> {
   int _hours = 0;
   int _minutes = 0;
   int _seconds = 0;
+  final allTimes = [];
   final Stopwatch _stopWatch = Stopwatch();
 
-  void _startStopWatch(){
+  void _startStopWatch() {
     _stopWatch.start();
   }
 
@@ -125,22 +152,31 @@ class _StopWatchState extends State<StopWatch> {
       var totalMinutes = totalSeconds ~/ 60;
       var totalHours = totalMinutes ~/ 60;
       _hours = totalHours;
-      _minutes = totalMinutes - (totalHours*60);
-      _seconds = totalSeconds - (totalMinutes*60);
-      _stopWatch.stop();
+      _minutes = totalMinutes - (totalHours * 60);
+      _seconds = totalSeconds - (totalMinutes * 60);
+      allTimes.add([_hours, _minutes, _seconds]);
+      _stopWatch.reset();
+      _hours = _minutes = _seconds = 0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        const SizedBox(width: 40),
-        StopWatchDisplay(hours: _hours, minutes: _minutes, seconds: _seconds),
-        StopWatchStart(onPressed: _startStopWatch),
-        StopWatchPause(onPressed: _pauseStopWatch),
-        StopWatchStop(onPressed: _stopStopWatch),
+    return Column(
+      children: [
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          const SizedBox(width: 40),
+          StopWatchDisplay(hours: _hours, minutes: _minutes, seconds: _seconds),
+          StopWatchStart(onPressed: _startStopWatch),
+          StopWatchPause(onPressed: _pauseStopWatch),
+          StopWatchStop(onPressed: _stopStopWatch),
+          ]
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          const SizedBox(width: 40),
+          StopWatchDisplayAllTimes(allTimes: allTimes)
+        ]
+        )
       ],
     );
   }
@@ -161,5 +197,3 @@ void main() {
     ),
   );
 }
-
-
