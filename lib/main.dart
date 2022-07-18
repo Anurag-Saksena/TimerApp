@@ -27,6 +27,27 @@ class StopWatchDisplay extends StatelessWidget {
   }
 }
 
+class StopWatchPause extends StatelessWidget {
+  const StopWatchPause({required this.onPressed, super.key});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawMaterialButton(
+      onPressed: onPressed,
+      elevation: 2.0,
+      fillColor: Colors.lightGreen,
+      padding: const EdgeInsets.all(15.0),
+      shape: const CircleBorder(),
+      child: const Icon(
+        Icons.pause,
+        size: 35.0,
+      ),
+    );
+  }
+}
+
 class StopWatchStart extends StatelessWidget {
   const StopWatchStart({required this.onPressed, super.key});
 
@@ -86,6 +107,16 @@ class _StopWatchState extends State<StopWatch> {
     _stopWatch.start();
   }
 
+  void _pauseStopWatch(){
+    var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
+    var totalMinutes = totalSeconds ~/ 60;
+    var totalHours = totalMinutes ~/ 60;
+    _hours = totalHours;
+    _minutes = totalMinutes - (totalHours*60);
+    _seconds = totalSeconds - (totalMinutes*60);
+    _stopWatch.stop();
+  }
+
   void _stopStopWatch() {
     setState(() {
       var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
@@ -106,6 +137,7 @@ class _StopWatchState extends State<StopWatch> {
         const SizedBox(width: 40),
         StopWatchDisplay(hours: _hours, minutes: _minutes, seconds: _seconds),
         StopWatchStart(onPressed: _startStopWatch),
+        StopWatchPause(onPressed: _pauseStopWatch),
         StopWatchStop(onPressed: _stopStopWatch),
       ],
     );
