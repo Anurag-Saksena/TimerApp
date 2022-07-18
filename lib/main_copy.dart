@@ -8,6 +8,26 @@ String convertToTwoDigitString(int value) {
   }
 }
 
+List subtractTimes(List time1, List time2) {
+  var hours1 = time1[0];
+  var minutes1 = time1[1];
+  var seconds1 = time1[2];
+  var hours2 = time2[0];
+  var minutes2 = time2[1];
+  var seconds2 = time2[2];
+
+  var time1Date = DateTime(2022, 7, 18, hours1, minutes1, seconds1);
+  var time2Date = DateTime(2022, 7, 18, hours2, minutes2, seconds2);
+
+  var difference = time1Date.difference(time2Date);
+
+  var hoursDifference = difference.inHours;
+  var minutesDifference = difference.inMinutes;
+  var secondsDifference = difference.inSeconds;
+
+  return [hoursDifference, minutesDifference, secondsDifference];
+}
+
 class StopWatchDisplay extends StatelessWidget {
   const StopWatchDisplay(
       {required this.hours,
@@ -30,15 +50,14 @@ class StopWatchDisplay extends StatelessWidget {
 }
 
 class StopWatchDisplayAllTimes extends StatelessWidget {
-  const StopWatchDisplayAllTimes(
-      {required this.allTimes, super.key});
+  const StopWatchDisplayAllTimes({required this.allTimes, super.key});
 
   final List allTimes;
 
   @override
   Widget build(BuildContext context) {
     var displayString = "";
-    for (var i=0;i<allTimes.length;i++){
+    for (var i = 0; i < allTimes.length; i++) {
       var timeList = allTimes[i];
       var hours = timeList[0];
       var minutes = timeList[1];
@@ -46,10 +65,45 @@ class StopWatchDisplayAllTimes extends StatelessWidget {
       var hourString = convertToTwoDigitString(hours);
       var minuteString = convertToTwoDigitString(minutes);
       var secondString = convertToTwoDigitString(seconds);
-      displayString = "${displayString}Time ${i+1}=     $hourString:$minuteString:$secondString\n";
+      displayString = "${displayString}Time ${i + 1}  =  "
+          "$hourString:$minuteString:$secondString\n";
     }
 
-    return Text(displayString, style: const TextStyle(fontSize: 64.0));
+    return Text(
+      displayString,
+      style: const TextStyle(fontSize: 20.0),
+      textAlign: TextAlign.left,
+    );
+  }
+}
+
+class StopWatchDisplayAllLaps extends StatelessWidget {
+  const StopWatchDisplayAllLaps({required this.allLaps, super.key});
+
+  final List allLaps;
+
+  @override
+  Widget build(BuildContext context) {
+    var displayString = "";
+    for (var i = 1; i < allLaps.length; i++) {
+      var timeList = allLaps[i];
+      var prevTimeList = allLaps[i - 1];
+      var timeDifference = subtractTimes(timeList, prevTimeList);
+      var hours = timeDifference[0];
+      var minutes = timeDifference[1];
+      var seconds = timeDifference[2];
+      var hourString = convertToTwoDigitString(hours);
+      var minuteString = convertToTwoDigitString(minutes);
+      var secondString = convertToTwoDigitString(seconds);
+      displayString = "${displayString}Lap $i  =  "
+          "$hourString:$minuteString:$secondString\n";
+    }
+
+    return Text(
+      displayString,
+      style: const TextStyle(fontSize: 20.0),
+      textAlign: TextAlign.left,
+    );
   }
 }
 
@@ -116,6 +170,27 @@ class StopWatchStop extends StatelessWidget {
   }
 }
 
+class StopWatchLap extends StatelessWidget {
+  const StopWatchLap({required this.onPressed, super.key});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawMaterialButton(
+      onPressed: onPressed,
+      elevation: 2.0,
+      fillColor: Colors.lightGreen,
+      padding: const EdgeInsets.all(15.0),
+      shape: const CircleBorder(),
+      child: const Text(
+        "Lap",
+        style: TextStyle(fontSize: 35.0),
+      ),
+    );
+  }
+}
+
 class StopWatch extends StatefulWidget {
   const StopWatch({super.key});
 
@@ -128,6 +203,9 @@ class _StopWatchState extends State<StopWatch> {
   int _minutes = 0;
   int _seconds = 0;
   final allTimes = [];
+  final allLaps = [
+    [0, 0, 0]
+  ];
   final Stopwatch _stopWatch = Stopwatch();
 
   void _startStopWatch() {
@@ -146,6 +224,18 @@ class _StopWatchState extends State<StopWatch> {
     });
   }
 
+  void _lapStopWatch() {
+    setState(() {
+      var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
+      var totalMinutes = totalSeconds ~/ 60;
+      var totalHours = totalMinutes ~/ 60;
+      _hours = totalHours;
+      _minutes = totalMinutes - (totalHours * 60);
+      _seconds = totalSeconds - (totalMinutes * 60);
+      allLaps.add([_hours, _minutes, _seconds]);
+    });
+  }
+
   void _stopStopWatch() {
     setState(() {
       var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
@@ -155,6 +245,7 @@ class _StopWatchState extends State<StopWatch> {
       _minutes = totalMinutes - (totalHours * 60);
       _seconds = totalSeconds - (totalMinutes * 60);
       allTimes.add([_hours, _minutes, _seconds]);
+      allLaps.clear();
       _stopWatch.reset();
       _hours = _minutes = _seconds = 0;
     });
@@ -164,19 +255,32 @@ class _StopWatchState extends State<StopWatch> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
           const SizedBox(width: 40),
           StopWatchDisplay(hours: _hours, minutes: _minutes, seconds: _seconds),
           StopWatchStart(onPressed: _startStopWatch),
           StopWatchPause(onPressed: _pauseStopWatch),
+          StopWatchLap(onPressed: _lapStopWatch),
           StopWatchStop(onPressed: _stopStopWatch),
-          ]
+        ]),
+
+        const SizedBox(
+          height: 20,
         ),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+
+        Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
           const SizedBox(width: 40),
           StopWatchDisplayAllTimes(allTimes: allTimes)
-        ]
-        )
+        ]),
+
+        const SizedBox(
+          height: 20,
+        ),
+
+        Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+          const SizedBox(width: 40),
+          StopWatchDisplayAllLaps(allLaps: allLaps)
+        ])
       ],
     );
   }
@@ -190,8 +294,10 @@ void main() {
           backgroundColor: Colors.lightGreen,
           title: const Text('Stop Watch Application'),
         ),
-        body: const Center(
-          child: StopWatch(),
+        body:  Column(
+          children: const [
+            SizedBox(height:30),
+            StopWatch()],
         ),
       ),
     ),
