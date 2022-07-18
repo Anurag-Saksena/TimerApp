@@ -107,14 +107,16 @@ class _StopWatchState extends State<StopWatch> {
     _stopWatch.start();
   }
 
-  void _pauseStopWatch(){
-    var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
-    var totalMinutes = totalSeconds ~/ 60;
-    var totalHours = totalMinutes ~/ 60;
-    _hours = totalHours;
-    _minutes = totalMinutes - (totalHours*60);
-    _seconds = totalSeconds - (totalMinutes*60);
-    _stopWatch.stop();
+  void _pauseStopWatch() {
+    setState(() {
+      var totalSeconds = _stopWatch.elapsedMilliseconds ~/ 1000;
+      var totalMinutes = totalSeconds ~/ 60;
+      var totalHours = totalMinutes ~/ 60;
+      _hours = totalHours;
+      _minutes = totalMinutes - (totalHours * 60);
+      _seconds = totalSeconds - (totalMinutes * 60);
+      _stopWatch.stop();
+    });
   }
 
   void _stopStopWatch() {
